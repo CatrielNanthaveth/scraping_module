@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/ 
+
+# Compiled output
+/build/
+/dist/
+*.exe
+*.log
+*.pyc
+__pycache__/
+
+# OS and Editor files
+.DS_Store # macOS specific file
+Thumbs.db # Windows specific file
+.vscode/ # VS Code settings directory
+.idea/ # JetBrains IDEs settings directory
+
+# Environment variables
+.env # Contains sensitive information
