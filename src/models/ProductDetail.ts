@@ -3,6 +3,7 @@ export class ProductDetail {
     public title: string;
     public price: number;
     public image: string;
+    public currency: string;
     public url: string;
     public description: string;
     public brand: string | null;

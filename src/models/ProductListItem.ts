@@ -4,4 +4,5 @@ export interface ProductListItem {
     price: number;
     image: string;
     url: string;    
+    currency: string;
 }

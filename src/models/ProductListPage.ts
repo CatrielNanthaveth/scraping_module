@@ -1,4 +1,4 @@
-import type { ProductListItem } from "./ProductListItem.js";
+import type { ProductListItem } from "./ProductListItem.ts";
 
 export class ProductListPage {
     public keyword: string;
