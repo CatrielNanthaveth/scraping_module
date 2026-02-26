@@ -15,15 +15,15 @@ async function run() {
 
         if (productList.products.length > 0) {
             console.log("\nFetching details for the first product...");
-            const firstProductId = productList.products[0]?.id;
-            if (!firstProductId) {
-                console.error("No product ID found");
+            const firstProductUrl = productList.products[0]?.url;
+            if (!firstProductUrl) {
+                console.error("No product URL found");
                 return;
             }
             
-            // const productDetail = await retailer.getProductDetails(firstProductId);
-            // console.log("--- PRODUCT DETAILS ---");
-            // console.log(productDetail);
+            const productDetail = await retailer.getProductDetails(firstProductUrl);
+            console.log("--- PRODUCT DETAILS ---");
+            console.log(productDetail);
         }
 
     } catch (error) {
