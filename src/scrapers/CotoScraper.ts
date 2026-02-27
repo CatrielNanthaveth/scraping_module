@@ -12,7 +12,7 @@ export class CotoScraper implements RetailerAdapter {
         this.httpClient = new HttpClient("https://www.cotodigital.com.ar");
     }
 
-    private scrapeProduct(data: any): ProductListItem | null {
+    private scrapeProductSearch(data: any): ProductListItem | null {
 
         try {
 
@@ -39,6 +39,34 @@ export class CotoScraper implements RetailerAdapter {
                 currency: 'ARS',
                 image: imageUrl,
                 url: 'https://www.cotodigital.com.ar/sitios/cdigi/productos' + data.detailsAction.recordState.split('?')[0]
+            };
+        } catch (err) {
+            console.error("Error parsing individual Coto product", err);
+            return null;
+        }
+    }
+
+    private scrapeProductCategory(data: any): ProductListItem | null {
+
+        try {
+
+            const rawPrice = Number(data.discounts?.[0]?.discountPrice?.match(/\d+/g)?.join('.') || '0');
+            const listPrice = data.price.find(p => p.store == '200')?.listPrice;
+
+            let imageUrl = data.product_large_image_url;
+
+            const slug = data.sku_description.toLowerCase().replaceAll(' ', '-');
+
+            const url = `https://www.cotodigital.com.ar/sitios/cdigi/productos/${slug}/${data.url}`
+
+            return {
+                id: data.id,
+                title: data.sku_display_name || 'Unknown Product',
+                price: rawPrice < listPrice ? rawPrice : listPrice,
+                old_price: rawPrice < listPrice ? listPrice : null,
+                currency: 'ARS',
+                image: imageUrl,
+                url
             };
         } catch (err) {
             console.error("Error parsing individual Coto product", err);
@@ -105,7 +133,7 @@ export class CotoScraper implements RetailerAdapter {
             const products = mainContent.contents[0].records;
 
             const items: ProductListItem[] = products.map((product: any) => {
-                return this.scrapeProduct(product);
+                return this.scrapeProductSearch(product);
             }).filter((item: ProductListItem | null): item is ProductListItem => item !== null);
 
             return new ProductListPage(keyword, items);
@@ -117,8 +145,29 @@ export class CotoScraper implements RetailerAdapter {
     }
 
     public async getCategoryProducts(categoryUrl: string): Promise<ProductListPage> {
-        // Implementation here
-        return new ProductListPage(categoryUrl, []);
+
+        const categoryId = categoryUrl.split('?')[0].split('/').at(-1);
+
+        const url = `https://api.coto.com.ar/api/v1/ms-digital-sitio-bff-web/api/v1/products/categories/${categoryId}?key=key_r6xzz4IAoTWcipni&num_results_per_page=24&pre_filter_expression=%7B%22name%22:%22store_availability%22,%22value%22:%22200%22%7D`
+        const response = await this.httpClient.get<any>(url);
+
+        if (!response.response || !response.response.results || !response.response.results[0]) {
+            console.warn(`Coto returned unexpected JSON structure for url ${categoryUrl}.`);
+            return new ProductListPage(categoryUrl, []);
+        }
+
+        const products = response.response.results.map(e => e.data);
+
+        if (!products.length) {
+            console.log(`No results found on Coto for url ${categoryUrl}.`);
+            return new ProductListPage(categoryUrl, []);
+        }
+
+        const items: ProductListItem[] = products.map((product: any) => {
+            return this.scrapeProductCategory(product);
+        }).filter((item: ProductListItem | null): item is ProductListItem => item !== null);
+
+        return new ProductListPage(categoryUrl, items);
     }
 
     public async getProductDetails(idOrUrl: string): Promise<ProductDetail> {

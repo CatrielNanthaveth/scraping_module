@@ -10,8 +10,17 @@ async function run() {
         
         console.log(`\nFound ${productList.products.length} products!`);
         console.log("--- FIRST 3 PRODUCTS ---");
+        console.log(JSON.stringify(productList.products.slice(0, 3))); 
+
+        const categoryUrl = 'https://www.cotodigital.com.ar/sitios/cdigi/productos/categorias/catalogo-bebidas-bebidas-con-alcohol-cerveza/catv00001527'
         
-        console.log(productList.products.slice(0, 3)); 
+        console.log(`Searching for '${categoryUrl}'...`);
+        const productCategoryList = await retailer.getCategoryProducts(categoryUrl);
+
+        console.log(`\nFound ${productCategoryList.products.length} products!`);
+        console.log("--- FIRST 3 PRODUCTS ---");
+        console.log(JSON.stringify(productCategoryList.products.slice(0, 3))); 
+        
 
         if (productList.products.length > 0) {
             console.log("\nFetching details for the first product...");
@@ -23,7 +32,7 @@ async function run() {
             
             const productDetail = await retailer.getProductDetails(firstProductUrl);
             console.log("--- PRODUCT DETAILS ---");
-            console.log(productDetail);
+            console.log(JSON.stringify(productDetail));
         }
 
     } catch (error) {
